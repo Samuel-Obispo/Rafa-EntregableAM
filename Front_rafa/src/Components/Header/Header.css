@@ -1,0 +1,44 @@
+.page-header {
+  height: 60px;
+  background-color: #8b4513;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  padding: 0 2rem;
+  position: fixed;
+  top: 0;
+  left: 250px;
+  right: 0;
+  z-index: 99;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.page-header-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+@media (max-width: 992px) {
+  .page-header {
+    left: 220px;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    left: 0;
+    padding: 0 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .page-header {
+    padding: 0 1rem;
+  }
+
+  .page-header-title {
+    font-size: 1.1rem;
+  }
+}
+

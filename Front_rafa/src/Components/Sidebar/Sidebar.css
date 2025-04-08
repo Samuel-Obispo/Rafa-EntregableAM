@@ -1,0 +1,140 @@
+/* Estilos para el Sidebar */
+:root {
+  --sidebar-bg: #f0ead6;
+  --sidebar-border: #c8b88a;
+  --sidebar-text: #8b4513;
+  --sidebar-text-hover: #d9a400;
+  --sidebar-active-bg: #ffffff;
+  --sidebar-active-border: #d9a400;
+  --sidebar-active-text: #8b4513;
+  --sidebar-icon-size: 20px;
+  --header-bg: #8b4513;
+  --header-text: #ffffff;
+  --transition-speed: 0.3s;
+}
+
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  transition: transform var(--transition-speed) ease;
+}
+
+/* Logo y título */
+.sidebar-logo {
+  padding: 2rem 1.5rem;
+  border-bottom: 1px solid var(--sidebar-border);
+}
+
+.sidebar-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--sidebar-text);
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+.sidebar-title::after {
+  content: "";
+  display: block;
+  width: 50px;
+  height: 2px;
+  background-color: var(--sidebar-border);
+  margin-top: 0.5rem;
+}
+
+/* Navegación */
+.sidebar-nav {
+  flex: 1;
+  padding: 1.5rem 0;
+  overflow-y: auto;
+}
+
+.sidebar-nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-nav-item {
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-nav-link {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all var(--transition-speed) ease;
+  border-left: 3px solid transparent;
+}
+
+.sidebar-nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.5);
+  color: var(--sidebar-text-hover);
+}
+
+.sidebar-nav-link.active {
+  background-color: var(--sidebar-active-bg);
+  border-left: 3px solid var(--sidebar-active-border);
+  color: var(--sidebar-active-text);
+  font-weight: 600;
+}
+
+.sidebar-nav-icon {
+  margin-right: 0.75rem;
+  width: var(--sidebar-icon-size);
+  height: var(--sidebar-icon-size);
+}
+
+/* Footer del sidebar */
+.sidebar-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--sidebar-border);
+}
+
+.sidebar-logout-btn {
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  background: none;
+  border: 1px solid var(--sidebar-text);
+  border-radius: 4px;
+  color: var(--sidebar-text);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+  text-align: center;
+}
+
+.sidebar-logout-btn:hover {
+  background-color: var(--sidebar-text);
+  color: var(--sidebar-bg);
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .sidebar {
+    width: 220px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+}
+
