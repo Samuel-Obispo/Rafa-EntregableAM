@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { register } from "../Services/api"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { User, KeyRound } from "lucide-react"
 import "../Styles/register.css"
 
@@ -14,6 +14,7 @@ const Register = () => {
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [loading, setLoading] = useState(false)
+  const [isEmailValid, setIsEmailValid] = useState(false)
   const [passwordRequirements, setPasswordRequirements] = useState({
     length: false,
     uppercase: false,
@@ -21,7 +22,12 @@ const Register = () => {
     specialChar: false,
   })
 
-  // Actualizar los requisitos de contraseña cuando cambia la contraseña
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    setIsEmailValid(validateEmail(email))
+  }, [email])
+
   useEffect(() => {
     setPasswordRequirements({
       length: password.length >= 6,
@@ -32,7 +38,7 @@ const Register = () => {
   }, [password])
 
   const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
     return emailRegex.test(email)
   }
 
@@ -42,7 +48,7 @@ const Register = () => {
       lowercase: /[a-z]/.test(password),
       uppercase: /[A-Z]/.test(password),
       number: /\d/.test(password),
-      specialChar: /[\W_]/.test(password),
+      specialChar: /[#!?*]/.test(password),
     }
   }
 
@@ -78,9 +84,9 @@ const Register = () => {
       const response = await register(sanitizedEmail, sanitizedPassword)
       console.log("Registro exitoso:", response)
       setSuccess("Usuario registrado exitosamente")
-      setEmail("")
-      setPassword("")
-      setConfirmPassword("")
+
+      // Redirige al login con un estado que indica registro exitoso
+      navigate("/", { state: { registrationSuccess: true } })
     } catch (error) {
       setError("Error al registrar el usuario")
     } finally {
@@ -108,6 +114,9 @@ const Register = () => {
               className="form-input"
             />
           </div>
+          <span className={isEmailValid ? "requirement-valid" : "requirement-invalid"}>
+            {isEmailValid ? "Correo válido" : "Debe contener letras o números antes de @ y un dominio válido"}
+          </span>
         </div>
 
         <div className="form-group">
@@ -139,8 +148,7 @@ const Register = () => {
               <span className="requirement-text">Al menos un número (0-9)</span>
             </li>
             <li className={passwordRequirements.specialChar ? "requirement-valid" : "requirement-invalid"}>
-              <span className="requirement-bullet"></span>
-              <span className="requirement-text">Al menos un carácter especial</span>
+              <span className="requirement-text">Un carácter especial ( #!?* )</span>
             </li>
           </ul>
         </div>
@@ -180,4 +188,3 @@ const Register = () => {
 }
 
 export default Register
-

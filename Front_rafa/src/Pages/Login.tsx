@@ -1,9 +1,9 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { login } from "../Services/api"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import { User, KeyRound } from "lucide-react"
 import { useAuth } from "../Context/AuthContext"
 import "../Styles/login.css"
@@ -12,9 +12,20 @@ const Login = () => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
   const [loading, setLoading] = useState(false)
   const { login: authLogin } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    if (location.state?.registrationSuccess) {
+      setError("")
+      setSuccess("Usuario registrado exitosamente")
+      // Clear the state to prevent showing the message on refresh
+      window.history.replaceState({}, document.title)
+    }
+  }, [location])
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -33,6 +44,7 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+    setSuccess("")
 
     const sanitizedEmail = sanitizeInput(email)
     const sanitizedPassword = sanitizeInput(password)
@@ -104,6 +116,7 @@ const Login = () => {
         </button>
 
         {error && <p className="error-message">{error}</p>}
+        {success && <p className="success-message">{success}</p>}
 
         <p className="redirect-text">
           ¿No tienes cuenta?{" "}
@@ -117,4 +130,3 @@ const Login = () => {
 }
 
 export default Login
-

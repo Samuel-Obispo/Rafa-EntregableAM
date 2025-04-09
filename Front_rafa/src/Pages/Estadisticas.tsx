@@ -261,24 +261,7 @@ const StatisticsPage = () => {
                         >
                           20
                         </button>
-                        <button
-                          className={recordsToShow === 50 ? "active" : ""}
-                          onClick={() => handleRecordsChange(50)}
-                        >
-                          50
-                        </button>
-                        <button
-                          className={recordsToShow === 100 ? "active" : ""}
-                          onClick={() => handleRecordsChange(100)}
-                        >
-                          100
-                        </button>
-                        <button
-                          className={recordsToShow === historicalData.length ? "active" : ""}
-                          onClick={() => handleRecordsChange(historicalData.length)}
-                        >
-                          Todos
-                        </button>
+
                       </div>
                     </div>
                     <div className="data-info">

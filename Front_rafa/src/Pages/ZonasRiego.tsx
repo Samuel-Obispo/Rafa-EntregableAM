@@ -51,19 +51,28 @@ const ZonasRiego = () => {
         const data = await fetchZonasRiego()
 
         // Transformamos los datos si es necesario
-        const zonasFormateadas = data.map((zona: any) => ({
-          id: zona.id,
-          sector: zona.sector || "Sector sin nombre",
-          nombre: zona.nombre,
-          tipo_riego: zona.tipo_riego || "Desconocido",
-          estado: zona.estado || "Desconocido",
-          motivo: zona.motivo,
-          latitud: zona.latitud !== null ? Number.parseFloat(zona.latitud) : 19.432608 + (Math.random() * 0.02 - 0.01),
-          longitud:
-            zona.longitud !== null ? Number.parseFloat(zona.longitud) : -99.133209 + (Math.random() * 0.02 - 0.01),
-          color: zona.color || getColorForEstado(zona.estado),
-          fecha: zona.fecha || new Date().toISOString(),
-        }))
+        const zonasFormateadas = data
+          .map((zona: any) => ({
+            id: zona.id,
+            sector: zona.sector || "Sector sin nombre",
+            nombre: zona.nombre,
+            tipo_riego: zona.tipo_riego || "Desconocido",
+            estado: zona.estado || "Desconocido",
+            motivo: zona.motivo,
+            latitud: zona.latitud !== null ? Number.parseFloat(zona.latitud) : null,
+            longitud: zona.longitud !== null ? Number.parseFloat(zona.longitud) : null,
+            color: zona.color || getColorForEstado(zona.estado),
+            fecha: zona.fecha || new Date().toISOString(),
+          }))
+          .filter((zona) => {
+            // Filter out test points in Merida area
+            if (zona.latitud && zona.longitud) {
+              const isMeridaArea =
+                zona.latitud > 20.9 && zona.latitud < 21.1 && zona.longitud > -89.7 && zona.longitud < -89.5
+              return !isMeridaArea
+            }
+            return true
+          })
 
         // Añadir datos de ejemplo si no hay datos
         if (zonasFormateadas.length === 0) {
@@ -106,8 +115,8 @@ const ZonasRiego = () => {
         tipo_riego: tiposRiego[Math.floor(Math.random() * tiposRiego.length)],
         estado: estado,
         motivo: estado !== "Funcionando" ? "Mantenimiento programado" : null,
-        latitud: 19.432608 + (Math.random() * 0.05 - 0.025),
-        longitud: -99.133209 + (Math.random() * 0.05 - 0.025),
+        latitud: 21.049857 + (Math.random() * 0.05 - 0.025),
+        longitud: -86.846781 + (Math.random() * 0.05 - 0.025),
         color: getColorForEstado(estado),
         fecha: new Date().toISOString(),
       }
@@ -134,14 +143,19 @@ const ZonasRiego = () => {
   // Filtrar zonas con problemas
   const zonasConProblemas = zonas.filter((zona) => {
     const estadoLower = zona.estado.toLowerCase()
-    return !estadoLower.includes("funcionando") && !estadoLower.includes("activo") && !estadoLower.includes("encendido")
+    return (
+      !estadoLower.includes("funcionando") &&
+      !estadoLower.includes("activo") &&
+      !estadoLower.includes("encendido") &&
+      !estadoLower.includes("apagado")
+    ) // Exclude "apagado" state
   })
 
   // Preparar datos para el gráfico
   const contarZonasPorEstado = () => {
     const contador: Record<string, number> = {}
     zonas.forEach((zona) => {
-      const estado = zona.estado
+      const estado = zona.estado.toLowerCase() // Convertir a minúsculas
       contador[estado] = (contador[estado] || 0) + 1
     })
     return contador
@@ -149,13 +163,13 @@ const ZonasRiego = () => {
 
   const estadoZonas = contarZonasPorEstado()
   const coloresEstados: Record<string, string> = {
-    Funcionando: "#4CAF50",
-    Activo: "#4CAF50",
-    Encendido: "#4CAF50",
-    Mantenimiento: "#FFC107",
-    Descompuesto: "#F44336",
-    "Fuera de servicio": "#9E9E9E",
-    Apagado: "#9E9E9E",
+    funcionando: "#4CAF50",
+    activo: "#4CAF50",
+    encendido: "#4CAF50",
+    mantenimiento: "#FFC107",
+    descompuesto: "#F44336",
+    "fuera de servicio": "#9E9E9E",
+    apagado: "#9E9E9E",
   }
 
   const datosGrafico = {
@@ -172,18 +186,11 @@ const ZonasRiego = () => {
 
   // Calcular el centro del mapa basado en las coordenadas de las zonas
   const calcularCentroMapa = () => {
-    if (zonas.length === 0) return [19.432608, -99.133209] // Default: CDMX
-
-    // Filtrar zonas con coordenadas válidas
-    const zonasConCoordenadas = zonas.filter((zona) => zona.latitud !== null && zona.longitud !== null)
-
-    if (zonasConCoordenadas.length === 0) return [19.432608, -99.133209]
-
-    const sumLat = zonasConCoordenadas.reduce((sum, zona) => sum + (zona.latitud || 0), 0)
-    const sumLng = zonasConCoordenadas.reduce((sum, zona) => sum + (zona.longitud || 0), 0)
-
-    return [sumLat / zonasConCoordenadas.length, sumLng / zonasConCoordenadas.length]
+    return [21.049857, -86.846781] // Coordenadas fijas en Cancún
   }
+
+  // Filtrar zonas con coordenadas válidas para el mapa
+  const zonasConCoordenadas = zonas.filter((zona) => zona.latitud !== null && zona.longitud !== null)
 
   return (
     <div className="layout-container">
@@ -236,7 +243,7 @@ const ZonasRiego = () => {
                     <div className="mapa-wrapper">
                       <MapContainer
                         center={calcularCentroMapa() as [number, number]}
-                        zoom={13}
+                        zoom={17}
                         zoomControl={false}
                         style={{ height: "100%", width: "100%" }}
                       >
@@ -245,11 +252,11 @@ const ZonasRiego = () => {
                           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                         />
-                        {zonas.map((zona) => (
+                        {zonasConCoordenadas.map((zona) => (
                           <CircleMarker
                             key={zona.id}
-                            center={[zona.latitud || 0, zona.longitud || 0]}
-                            radius={10}
+                            center={[zona.latitud as number, zona.longitud as number]}
+                            radius={11}
                             pathOptions={{
                               color: zona.color,
                               fillColor: zona.color,
@@ -259,11 +266,21 @@ const ZonasRiego = () => {
                             <Popup>
                               <div className="popup-content">
                                 <h3>{zona.sector}</h3>
+                                <span
+                                  className="estado-badge"
+                                  style={{
+                                    backgroundColor: zona.color,
+                                    color: zona.color === "#FFC107" ? "#333" : "#fff",
+                                  }}
+                                >
+                                  {zona.estado}
+                                </span>
                                 {zona.nombre && (
                                   <p>
                                     <strong>Nombre:</strong> {zona.nombre}
                                   </p>
                                 )}
+
                                 <p>
                                   <strong>Tipo de riego:</strong> {zona.tipo_riego}
                                 </p>
@@ -283,27 +300,6 @@ const ZonasRiego = () => {
                           </CircleMarker>
                         ))}
                       </MapContainer>
-                    </div>
-                    <div className="mapa-leyenda">
-                      <h3>Leyenda</h3>
-                      <div className="leyenda-items">
-                        <div className="leyenda-item">
-                          <span className="color-dot" style={{ backgroundColor: "#4CAF50" }}></span>
-                          <span>Funcionando</span>
-                        </div>
-                        <div className="leyenda-item">
-                          <span className="color-dot" style={{ backgroundColor: "#FFC107" }}></span>
-                          <span>Mantenimiento</span>
-                        </div>
-                        <div className="leyenda-item">
-                          <span className="color-dot" style={{ backgroundColor: "#F44336" }}></span>
-                          <span>Descompuesto</span>
-                        </div>
-                        <div className="leyenda-item">
-                          <span className="color-dot" style={{ backgroundColor: "#9E9E9E" }}></span>
-                          <span>Fuera de servicio</span>
-                        </div>
-                      </div>
                     </div>
                   </div>
                 )}
